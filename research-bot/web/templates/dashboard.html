@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리서치 자동화 봇 대시보드</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+        .header { background: #1e293b; border-bottom: 1px solid #334155; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.5rem; color: #f8fafc; }
+        .header .meta { color: #94a3b8; font-size: 0.875rem; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.25rem; }
+        .stat-card .label { color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .stat-card .value { font-size: 2rem; font-weight: 700; color: #f8fafc; margin-top: 0.25rem; }
+
+        .section-title { font-size: 1.125rem; color: #f8fafc; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #334155; }
+
+        .topics { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .topic-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.25rem; transition: border-color 0.2s; }
+        .topic-card:hover { border-color: #6366f1; }
+        .topic-card h3 { color: #f8fafc; margin-bottom: 0.5rem; }
+        .topic-card .category { display: inline-block; background: #6366f1; color: white; padding: 0.125rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; margin-bottom: 0.5rem; }
+        .topic-card .keywords { color: #94a3b8; font-size: 0.8rem; }
+        .topic-card .urls { color: #64748b; font-size: 0.75rem; margin-top: 0.5rem; }
+
+        .reports-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        .report-item { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: inherit; transition: border-color 0.2s; }
+        .report-item:hover { border-color: #22c55e; }
+        .report-item .info h3 { color: #f8fafc; font-size: 1rem; margin-bottom: 0.25rem; }
+        .report-item .info .date { color: #94a3b8; font-size: 0.8rem; }
+        .report-item .info .summary { color: #cbd5e1; font-size: 0.85rem; margin-top: 0.5rem; max-width: 700px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .report-item .badge { background: #22c55e; color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; white-space: nowrap; }
+
+        .empty { text-align: center; padding: 3rem; color: #64748b; }
+        .empty p { margin-top: 0.5rem; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 리서치 자동화 봇</h1>
+        <div class="meta">마지막 갱신: {{ now }}</div>
+    </div>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card">
+                <div class="label">등록된 주제</div>
+                <div class="value">{{ topics | length }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">완료된 보고서</div>
+                <div class="value">{{ total_reports }}</div>
+            </div>
+        </div>
+
+        <h2 class="section-title">리서치 주제</h2>
+        <div class="topics">
+            {% for topic in topics %}
+            <div class="topic-card">
+                <span class="category">{{ topic.get('category', '일반') }}</span>
+                <h3>{{ topic.name }}</h3>
+                <div class="keywords">
+                    {% for kw in topic.get('keywords', []) %}
+                    <span>{{ kw }}{% if not loop.last %}, {% endif %}</span>
+                    {% endfor %}
+                </div>
+                <div class="urls">URL {{ topic.get('urls', []) | length }}개 등록</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <h2 class="section-title">리서치 보고서</h2>
+        {% if reports %}
+        <div class="reports-list">
+            {% for r in reports %}
+            <a href="/report/{{ r._filename }}" class="report-item">
+                <div class="info">
+                    <h3>{{ r.get('topic', '제목 없음') }}</h3>
+                    <div class="date">{{ r.get('created_at', '')[:10] }} · {{ r.get('category', '일반') }}</div>
+                    <div class="summary">{{ r.get('summary', '')[:150] }}</div>
+                </div>
+                <span class="badge">보기</span>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty">
+            <p>아직 리서치 보고서가 없습니다.</p>
+            <p><code>python main.py run --all</code> 로 리서치를 실행해보세요.</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

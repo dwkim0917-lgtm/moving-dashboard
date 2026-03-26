@@ -1,0 +1,86 @@
+# 리서치 자동화 봇 설정
+
+# 리서치 주제 목록
+topics:
+  - name: "AI 트렌드"
+    keywords:
+      - "artificial intelligence trends 2026"
+      - "AI 최신 동향"
+    urls:
+      - "https://news.ycombinator.com"
+      - "https://techcrunch.com/category/artificial-intelligence/"
+    category: "기술"
+
+  - name: "스타트업 동향"
+    keywords:
+      - "startup funding 2026"
+      - "스타트업 투자"
+    urls:
+      - "https://www.crunchbase.com/discover/funding_rounds"
+    category: "비즈니스"
+
+# API 엔드포인트 설정
+apis:
+  - name: "NewsAPI"
+    base_url: "https://newsapi.org/v2"
+    endpoints:
+      - path: "/everything"
+        params:
+          language: "ko"
+          sortBy: "publishedAt"
+          pageSize: 10
+    auth:
+      type: "api_key"
+      header: "X-Api-Key"
+      env_var: "NEWS_API_KEY"
+
+# 스크래핑 설정
+scraping:
+  timeout: 30
+  max_retries: 3
+  delay_between_requests: 2.0
+  user_agent: "ResearchBot/1.0"
+
+# AI 리서치 설정
+ai:
+  model: "claude-sonnet-4-20250514"
+  max_tokens: 4096
+  temperature: 0.3
+  prompt_template: |
+    다음 데이터를 분석하여 리서치 보고서를 작성해주세요.
+
+    주제: {topic}
+    수집된 데이터:
+    {data}
+
+    다음 형식으로 보고서를 작성해주세요:
+    1. 핵심 요약 (3-5문장)
+    2. 주요 발견사항 (불릿 포인트)
+    3. 트렌드 분석
+    4. 시사점 및 제안
+
+# Notion 설정
+notion:
+  database_id_env: "NOTION_DATABASE_ID"
+  properties:
+    title: "제목"
+    date: "날짜"
+    category: "카테고리"
+    summary: "요약"
+    source_urls: "출처"
+    status: "상태"
+
+# 스케줄링 설정
+schedule:
+  # 매일 오전 9시 실행
+  default_cron: "0 9 * * *"
+  # 주제별 개별 스케줄 (선택)
+  topic_schedules:
+    "AI 트렌드": "0 9 * * 1-5"      # 평일 오전 9시
+    "스타트업 동향": "0 10 * * 1"    # 매주 월요일 오전 10시
+
+# 출력 설정
+output:
+  reports_dir: "output/reports"
+  data_dir: "output/data"
+  format: "markdown"
