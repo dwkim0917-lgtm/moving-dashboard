@@ -1,0 +1,2172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이사 프로젝트</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #18181f;
+    --surface3: #1e1e28;
+    --border: #2a2a38;
+    --accent: #e8c547;
+    --accent2: #f07b3f;
+    --accent3: #5b8dee;
+    --danger: #e85555;
+    --success: #4cbb8a;
+    --text: #e8e8f0;
+    --text2: #9898b0;
+    --text3: #5a5a72;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Noto Sans KR', sans-serif;
+  }
+
+  /* Light mode */
+  .light-mode {
+    --bg: #f5f5f8;
+    --surface: #ffffff;
+    --surface2: #f0f0f5;
+    --surface3: #e8e8f0;
+    --border: #d0d0dd;
+    --text: #1a1a2e;
+    --text2: #555570;
+    --text3: #8888a0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  /* ALERT BANNER */
+  .alert-banner {
+    background: linear-gradient(90deg, rgba(232,85,85,0.15), rgba(240,123,63,0.1));
+    border-bottom: 1px solid rgba(232,85,85,0.3);
+    padding: 10px 32px;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .alert-banner.show { display: flex; }
+  .alert-icon { font-size: 16px; flex-shrink: 0; }
+  .alert-items { display: flex; gap: 16px; }
+  .alert-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .alert-item:hover { background: rgba(255,255,255,0.05); }
+  .alert-item.overdue { color: var(--danger); }
+  .alert-item.today { color: var(--accent2); }
+  .alert-item.tomorrow { color: var(--accent); }
+  .alert-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  .alert-tag.overdue { background: rgba(232,85,85,0.2); }
+  .alert-tag.today { background: rgba(240,123,63,0.2); }
+  .alert-tag.tomorrow { background: rgba(232,197,71,0.2); }
+
+  /* HEADER */
+  .header {
+    padding: 20px 32px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .subtitle {
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* D-DAY WIDGET */
+  .dday-widget {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, rgba(240,123,63,0.12), rgba(232,197,71,0.08));
+    border: 1px solid rgba(240,123,63,0.3);
+    border-radius: 10px;
+  }
+  .dday-number {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent2);
+    line-height: 1;
+  }
+  .dday-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .dday-label {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--text3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .dday-date {
+    font-size: 11px;
+    color: var(--text2);
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .header-stats {
+    display: flex;
+    gap: 20px;
+  }
+  .stat-item { text-align: right; }
+  .stat-val {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .stat-label {
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .icon-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    transition: all 0.2s;
+  }
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .add-task-btn {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: var(--sans);
+    transition: filter 0.2s;
+  }
+  .add-task-btn:hover { filter: brightness(1.1); }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    padding: 0 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .tab:hover { color: var(--text2); }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* PANEL */
+  .panel { display: none; padding: 28px 32px; }
+  .panel.active { display: block; }
+
+  /* SECTION */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+
+  /* GANTT */
+  .gantt-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+  .gantt-inner { min-width: 600px; }
+  .gantt-header {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+  .gantt-label-header {
+    padding: 12px 16px;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--text3);
+    letter-spacing: 1px;
+    border-right: 1px solid var(--border);
+  }
+  .gantt-months { display: grid; grid-template-columns: repeat(5, 1fr); }
+  .gantt-month {
+    padding: 12px 8px;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--text3);
+    text-align: center;
+    letter-spacing: 1px;
+    border-right: 1px solid var(--border);
+  }
+  .gantt-month:last-child { border-right: none; }
+  .gantt-month.current { color: var(--accent); font-weight: 700; }
+
+  .gantt-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    border-top: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .gantt-row:hover { background: var(--surface2); }
+  .gantt-row.done { opacity: 0.45; }
+
+  .gantt-task-label {
+    padding: 12px 16px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .gantt-task-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .gantt-task-name.done { text-decoration: line-through; color: var(--text3); }
+
+  .gantt-bar-area {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .gantt-col-bg { border-right: 1px solid rgba(42,42,56,0.5); }
+  .gantt-col-bg:last-child { border-right: none; }
+  .gantt-col-bg.current-month { background: rgba(232,197,71,0.03); }
+
+  .gantt-bar {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    font-size: 10px;
+    font-family: var(--mono);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: filter 0.2s;
+    cursor: pointer;
+  }
+  .gantt-bar:hover { filter: brightness(1.2); }
+
+  .gantt-milestone {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    width: 12px;
+    height: 12px;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  .gantt-milestone:hover { transform: translateY(-50%) rotate(45deg) scale(1.3); }
+
+  .deadline-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--accent);
+    opacity: 0.4;
+    z-index: 5;
+    pointer-events: none;
+  }
+  .deadline-line::before {
+    content: 'TODAY';
+    position: absolute;
+    top: -20px;
+    left: 4px;
+    font-size: 9px;
+    font-family: var(--mono);
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  /* CHECKLIST */
+  .category-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .category-header {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    user-select: none;
+  }
+  .category-header:hover { background: var(--surface2); }
+  .category-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .category-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-family: var(--mono);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .category-name { font-size: 14px; font-weight: 700; }
+  .category-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .category-progress-text {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--text3);
+  }
+  .category-badge {
+    font-size: 10px;
+    font-family: var(--mono);
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+  .badge-urgent { background: rgba(232,85,85,0.15); color: var(--danger); }
+  .badge-soon { background: rgba(240,123,63,0.15); color: var(--accent2); }
+  .badge-normal { background: rgba(91,141,238,0.15); color: var(--accent3); }
+  .collapse-arrow {
+    font-size: 12px;
+    color: var(--text3);
+    transition: transform 0.3s;
+    margin-left: 8px;
+  }
+  .collapse-arrow.collapsed { transform: rotate(-90deg); }
+
+  .category-progress-bar {
+    height: 2px;
+    background: var(--border);
+  }
+  .category-progress-fill {
+    height: 100%;
+    transition: width 0.4s ease;
+  }
+
+  .task-list {
+    padding: 4px 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease, opacity 0.25s ease;
+    max-height: 2000px;
+    opacity: 1;
+  }
+  .task-list.collapsed {
+    max-height: 0;
+    opacity: 0;
+    padding: 0;
+  }
+
+  .task-item {
+    padding: 10px 18px 10px 52px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    border-top: 1px solid rgba(42,42,56,0.5);
+    transition: background 0.15s;
+    position: relative;
+  }
+  .task-item:hover { background: var(--surface2); }
+  .task-item.completed { opacity: 0.4; }
+
+  .checkbox {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .checkbox.checked {
+    border-color: var(--success);
+    background: var(--success);
+  }
+  .checkbox.checked::after {
+    content: '\2713';
+    font-size: 10px;
+    color: #000;
+    font-weight: 700;
+  }
+
+  .task-content { flex: 1; min-width: 0; }
+  .task-name {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+  .task-name.done { text-decoration: line-through; color: var(--text3); }
+  .task-note {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 3px;
+    line-height: 1.5;
+  }
+  .task-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .task-deadline {
+    font-size: 10px;
+    font-family: var(--mono);
+    padding: 2px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .dl-overdue { background: rgba(232,85,85,0.15); color: var(--danger); }
+  .dl-urgent { background: rgba(240,123,63,0.15); color: var(--accent2); }
+  .dl-normal { background: rgba(91,141,238,0.12); color: var(--accent3); }
+  .dl-done { background: rgba(76,187,138,0.12); color: var(--success); }
+
+  .task-actions {
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .task-item:hover .task-actions { opacity: 1; }
+  .task-act-btn {
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    padding: 4px 6px;
+    font-size: 13px;
+    border-radius: 4px;
+    transition: all 0.15s;
+    line-height: 1;
+  }
+  .task-act-btn:hover { background: var(--surface3); color: var(--text); }
+  .task-act-btn.delete:hover { color: var(--danger); }
+
+  /* COST TRACKER */
+  .cost-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .cost-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+  }
+  .cost-card-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 8px;
+    font-family: var(--mono);
+  }
+  .cost-card-amount {
+    font-size: 22px;
+    font-family: var(--mono);
+    font-weight: 700;
+  }
+  .cost-card-sub {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+
+  .cost-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .cost-table-header {
+    display: grid;
+    grid-template-columns: 1fr 100px 100px 80px 60px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    font-family: var(--mono);
+    letter-spacing: 1px;
+    color: var(--text3);
+    text-transform: uppercase;
+  }
+  .cost-row {
+    display: grid;
+    grid-template-columns: 1fr 100px 100px 80px 60px;
+    padding: 12px 16px;
+    border-top: 1px solid rgba(42,42,56,0.5);
+    align-items: center;
+    transition: background 0.15s;
+  }
+  .cost-row:hover { background: var(--surface2); }
+  .cost-name { font-size: 13px; }
+  .cost-category-tag {
+    font-size: 10px;
+    font-family: var(--mono);
+    padding: 2px 6px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+  .cost-amount {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: right;
+  }
+  .cost-amount.expense { color: var(--accent2); }
+  .cost-status {
+    font-size: 10px;
+    font-family: var(--mono);
+    text-align: right;
+    color: var(--text3);
+  }
+  .cost-actions {
+    display: flex;
+    gap: 2px;
+    justify-content: flex-end;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .cost-row:hover .cost-actions { opacity: 1; }
+
+  /* MEMO PANEL */
+  .memo-area {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .memo-toolbar {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .memo-toolbar-left {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .memo-saved {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--success);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .memo-saved.show { opacity: 1; }
+  .memo-textarea {
+    width: 100%;
+    min-height: 400px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    padding: 20px;
+    resize: vertical;
+    outline: none;
+    line-height: 1.8;
+  }
+  .memo-textarea::placeholder { color: var(--text3); }
+
+  /* ADD BTN */
+  .add-btn {
+    background: none;
+    border: 1px dashed var(--border);
+    color: var(--text3);
+    padding: 10px 16px;
+    font-size: 12px;
+    font-family: var(--sans);
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    transition: all 0.2s;
+    border-radius: 0;
+  }
+  .add-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(232,197,71,0.04);
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px;
+    width: 100%;
+    max-width: 480px;
+  }
+  .modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--text3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .form-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: var(--sans);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-select {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: var(--sans);
+    outline: none;
+    cursor: pointer;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+    justify-content: flex-end;
+  }
+  .btn {
+    padding: 9px 20px;
+    font-size: 13px;
+    font-family: var(--sans);
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-ghost { background: none; border: 1px solid var(--border); color: var(--text2); }
+  .btn-ghost:hover { border-color: var(--text2); }
+  .btn-danger { background: rgba(232,85,85,0.15); color: var(--danger); border: 1px solid rgba(232,85,85,0.3); }
+  .btn-danger:hover { background: rgba(232,85,85,0.25); }
+
+  /* BACKUP SECTION */
+  .backup-section {
+    margin-top: 32px;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .backup-section .section-title { margin-bottom: 12px; }
+  .backup-btns {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  /* URGENCY PULSE */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .urgent-pulse { animation: pulse 2s infinite; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .header { padding: 14px 16px; }
+    .panel { padding: 20px 16px; }
+    .tabs { padding: 0 16px; }
+    .cost-summary { grid-template-columns: 1fr; }
+    .cost-table-header, .cost-row { grid-template-columns: 1fr 80px 80px 60px 50px; font-size: 11px; }
+    .dday-widget { padding: 6px 12px; }
+    .dday-number { font-size: 22px; }
+    .header-stats { gap: 12px; }
+    .stat-val { font-size: 14px; }
+    .alert-banner { padding: 10px 16px; }
+  }
+  @media (max-width: 480px) {
+    .header-stats { display: none; }
+    .gantt-task-label { min-width: 120px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ALERT BANNER -->
+<div class="alert-banner" id="alert-banner">
+  <span class="alert-icon">&#9888;</span>
+  <div class="alert-items" id="alert-items"></div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div>
+      <div class="title">이사 프로젝트</div>
+      <div class="subtitle">2025 Spring</div>
+    </div>
+    <div class="dday-widget" id="dday-widget">
+      <div class="dday-number" id="dday-number">—</div>
+      <div class="dday-info">
+        <div class="dday-label">이사일까지</div>
+        <div class="dday-date">2025.04.27</div>
+      </div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="header-stats">
+      <div class="stat-item">
+        <div class="stat-val" id="stat-completion">0%</div>
+        <div class="stat-label">완료율</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" id="stat-urgent" style="color: var(--danger)">0</div>
+        <div class="stat-label">긴급</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-val" style="color: var(--accent2)" id="stat-cost">0만</div>
+        <div class="stat-label">예상비용</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="toggleTheme()" title="다크/라이트 모드">&#9681;</button>
+      <button class="icon-btn" onclick="exportData()" title="데이터 내보내기">&#8681;</button>
+      <label class="icon-btn" title="데이터 가져오기" style="cursor:pointer;">
+        &#8679;
+        <input type="file" accept=".json" onchange="importData(event)" style="display:none" />
+      </label>
+      <button class="add-task-btn" onclick="openAddTaskModal()">+ Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showTab('timeline', event)">타임라인</div>
+  <div class="tab" onclick="showTab('tasks', event)">체크리스트</div>
+  <div class="tab" onclick="showTab('costs', event)">비용 추적</div>
+  <div class="tab" onclick="showTab('memo', event)">메모</div>
+</div>
+
+<!-- TIMELINE PANEL -->
+<div class="panel active" id="panel-timeline">
+  <div class="section-header">
+    <div class="section-title">전체 일정 — 2025.03 ~ 07</div>
+  </div>
+  <div class="gantt-wrapper">
+    <div class="gantt-inner">
+      <div class="gantt-header">
+        <div class="gantt-label-header">TASK</div>
+        <div class="gantt-months" id="gantt-months"></div>
+      </div>
+      <div id="gantt-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TASKS PANEL -->
+<div class="panel" id="panel-tasks">
+  <div id="task-categories"></div>
+  <button class="btn btn-primary" style="margin-top:8px; padding: 10px 20px; font-size:13px;" onclick="openAddTaskModal()">+ 항목 추가</button>
+</div>
+
+<!-- COSTS PANEL -->
+<div class="panel" id="panel-costs">
+  <div class="cost-summary">
+    <div class="cost-card">
+      <div class="cost-card-label">총 예상 비용</div>
+      <div class="cost-card-amount" id="total-cost" style="color: var(--accent2)">—</div>
+      <div class="cost-card-sub">세금 + 이사 + 기타</div>
+    </div>
+    <div class="cost-card">
+      <div class="cost-card-label">확정 지출</div>
+      <div class="cost-card-amount" id="confirmed-cost" style="color: var(--danger)">—</div>
+      <div class="cost-card-sub">납부 완료 항목</div>
+    </div>
+    <div class="cost-card">
+      <div class="cost-card-label">잔여 예상</div>
+      <div class="cost-card-amount" id="pending-cost" style="color: var(--text2)">—</div>
+      <div class="cost-card-sub">미확정 항목</div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">비용 항목</div>
+    <button class="btn btn-primary" style="padding:7px 14px; font-size:12px;" onclick="openAddCostModal()">+ 추가</button>
+  </div>
+  <div class="cost-table">
+    <div class="cost-table-header">
+      <div>항목</div>
+      <div>분류</div>
+      <div style="text-align:right">금액</div>
+      <div style="text-align:right">상태</div>
+      <div></div>
+    </div>
+    <div id="cost-list"></div>
+  </div>
+</div>
+
+<!-- MEMO PANEL -->
+<div class="panel" id="panel-memo">
+  <div class="section-header">
+    <div class="section-title">메모 & 노트</div>
+  </div>
+  <div class="memo-area">
+    <div class="memo-toolbar">
+      <div class="memo-toolbar-left">
+        <span style="font-size:12px; color:var(--text3);">자유롭게 메모하세요 — 회의 내용, 연락처, 할 일 등</span>
+      </div>
+      <span class="memo-saved" id="memo-saved">저장됨</span>
+    </div>
+    <textarea class="memo-textarea" id="memo-text" placeholder="여기에 메모를 작성하세요...&#10;&#10;예)&#10;- 유현인니 연락처: 010-xxxx-xxxx&#10;- 4/10 미팅: 증여 일정 확인&#10;- 인테리어 참고사항: ..."></textarea>
+  </div>
+</div>
+
+<!-- ADD TASK MODAL -->
+<div class="modal-overlay" id="modal-task">
+  <div class="modal">
+    <div class="modal-title" id="modal-task-title">항목 추가</div>
+    <div class="form-group">
+      <label class="form-label">카테고리</label>
+      <select class="form-select" id="new-task-cat"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">할 일</label>
+      <input class="form-input" id="new-task-name" placeholder="예: 공증 예약하기" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">마감일 (선택)</label>
+      <input class="form-input" type="date" id="new-task-date" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">메모 (선택)</label>
+      <input class="form-input" id="new-task-note" placeholder="추가 메모" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-task')">취소</button>
+      <button class="btn btn-danger" id="modal-task-delete" style="display:none" onclick="deleteEditingTask()">삭제</button>
+      <button class="btn btn-primary" id="modal-task-submit" onclick="saveTask()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD COST MODAL -->
+<div class="modal-overlay" id="modal-cost">
+  <div class="modal">
+    <div class="modal-title" id="modal-cost-title">비용 추가</div>
+    <div class="form-group">
+      <label class="form-label">항목명</label>
+      <input class="form-input" id="new-cost-name" placeholder="예: 취득세" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">분류</label>
+      <select class="form-select" id="new-cost-cat">
+        <option value="세금">세금</option>
+        <option value="이사">이사</option>
+        <option value="인테리어">인테리어</option>
+        <option value="자금">자금</option>
+        <option value="기타">기타</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">금액 (만원)</label>
+      <input class="form-input" type="number" id="new-cost-amount" placeholder="예: 500" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">메모 (선택)</label>
+      <input class="form-input" id="new-cost-note" placeholder="추가 메모" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">상태</label>
+      <select class="form-select" id="new-cost-status">
+        <option value="예정">예정</option>
+        <option value="확정">확정</option>
+        <option value="완료">완료</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-cost')">취소</button>
+      <button class="btn btn-danger" id="modal-cost-delete" style="display:none" onclick="deleteEditingCost()">삭제</button>
+      <button class="btn btn-primary" id="modal-cost-submit" onclick="saveCost()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal" style="max-width:360px; text-align:center;">
+    <div class="modal-title" id="confirm-title">삭제하시겠습니까?</div>
+    <p style="font-size:13px; color:var(--text2); margin-bottom:20px;" id="confirm-msg">이 작업은 되돌릴 수 없습니다.</p>
+    <div class="modal-actions" style="justify-content:center;">
+      <button class="btn btn-ghost" onclick="closeModal('modal-confirm')">취소</button>
+      <button class="btn btn-danger" id="confirm-ok" onclick="">삭제</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ──────────────────────────────────────────
+// DATA
+// ──────────────────────────────────────────
+const MONTHS = ['3월','4월','5월','6월','7월'];
+const MONTH_START = 3;
+const MOVING_DATE = '2025-04-27';
+
+const today = new Date();
+const todayMonth = today.getMonth() + 1;
+const todayDay = today.getDate();
+
+const CAT_COLORS = [
+  { bg: 'rgba(232,197,71,0.15)', border: '#e8c547', text: '#e8c547', num: '#000', numBg: '#e8c547' },
+  { bg: 'rgba(91,141,238,0.15)', border: '#5b8dee', text: '#5b8dee', num: '#000', numBg: '#5b8dee' },
+  { bg: 'rgba(76,187,138,0.15)', border: '#4cbb8a', text: '#4cbb8a', num: '#000', numBg: '#4cbb8a' },
+  { bg: 'rgba(240,123,63,0.15)', border: '#f07b3f', text: '#f07b3f', num: '#000', numBg: '#f07b3f' },
+  { bg: 'rgba(232,85,85,0.15)', border: '#e85555', text: '#e85555', num: '#fff', numBg: '#e85555' },
+  { bg: 'rgba(180,100,255,0.15)', border: '#b464ff', text: '#b464ff', num: '#fff', numBg: '#b464ff' },
+];
+
+let state = {
+  categories: [
+    {
+      id: 0, name: '세금/법무',
+      tasks: [
+        { id: 1, name: '연부연납 신청', note: '증여세 분할납부 신청', deadline: '2025-04-10', done: false },
+        { id: 2, name: '2대악 기준비계고사 정리', note: '', deadline: '2025-04-10', done: false },
+        { id: 3, name: '증여시점 확정 (4/10 초단기)', note: '마에스트로 사무실 1강 삼엽 연결', deadline: '2025-04-10', done: false },
+        { id: 40, name: '취득세 카드 묵이자 납약 (26일)', note: '', deadline: '2025-04-27', done: false },
+        { id: 41, name: '5/13까지 요건 준비 → 4/27까지 선행', note: '어리이멈, 이르잖, 신재낭 확인', deadline: '2025-04-27', done: false },
+        { id: 5, name: '증여 계약서 원본 보관 위치 확정', note: '', deadline: '2025-04-27', done: false },
+        { id: 4, name: '증여세 신고', note: '증여일로부터 3개월 이내', deadline: '2025-06-30', done: false },
+        { id: 42, name: '보유세 납부', note: '납부 일정 확인 필요', deadline: '2025-06-30', done: false },
+        { id: 6, name: '증여세 납부 영수증 스캔/보관', note: '납부 후 즉시 스캔', deadline: '2025-07-31', done: false },
+      ]
+    },
+    {
+      id: 1, name: '자금/정산',
+      tasks: [
+        { id: 16, name: '보증금 반환 계좌 지정 및 집주인 확인', note: '', deadline: '2025-04-20', done: false },
+        { id: 10, name: '보증금 반환 납원서 작성', note: '반공증 일정 확인', deadline: '2025-04-20', done: false },
+        { id: 11, name: '보유자금 & 대여금 확인', note: '박이/박시 자금 정리', deadline: '2025-04-20', done: false },
+        { id: 12, name: '차량금 이자 확인', note: '중도금 대여에 대한 이자 체크', deadline: '2025-04-25', done: false },
+        { id: 13, name: '관리비/잔기전 등 정산', note: '', deadline: '2025-04-27', done: false },
+        { id: 15, name: '기존 거주지 임대차 계약 종료 확인서 수령', note: '집주인에게 직접 수령', deadline: '2025-04-27', done: false },
+        { id: 14, name: '잔금 납부 (9/1 완결)', note: '', deadline: '2025-09-01', done: false },
+      ]
+    },
+    {
+      id: 2, name: '인테리어/점검',
+      tasks: [
+        { id: 20, name: '업체 3군데 견적 비교', note: '유현인니, 헤연언니, 기타 1곳', deadline: '2025-04-15', done: false },
+        { id: 21, name: '전자서비교 (벽지/장판)', note: '', deadline: '2025-04-20', done: false },
+        { id: 26, name: '조명 교체 여부 결정', note: '', deadline: '2025-04-20', done: false },
+        { id: 22, name: '인테리어 업체 확정', note: '', deadline: '2025-04-25', done: false },
+        { id: 23, name: '입주 전 하자 점검', note: '스크래치, 누수, 타일 깨짐 등 — 사진 촬영 필수', deadline: '2025-04-27', done: false },
+        { id: 24, name: '에어컨/보일러 작동 상태 확인', note: '', deadline: '2025-04-27', done: false },
+        { id: 25, name: '도배/장판 완료 후 환기 기간 확보', note: '최소 2주 환기 필요', deadline: '', done: false },
+      ]
+    },
+    {
+      id: 3, name: '이사 준비/실행',
+      tasks: [
+        { id: 30, name: '이사 예약 (4/27 확정)', note: '기존 5월말/6월초에서 앞당김', deadline: '2025-04-10', done: false },
+        { id: 34, name: '포장이사 vs 반포장 결정', note: '', deadline: '2025-04-10', done: false },
+        { id: 38, name: '이삿짐 보험 가입 여부 확인', note: '', deadline: '2025-04-15', done: false },
+        { id: 39, name: '엘리베이터 사용 예약', note: '아파트 관리사무소 — 양쪽 건물 모두', deadline: '2025-04-20', done: false },
+        { id: 36, name: '냉장고 전원 차단 (이사 24시간 전)', note: '전원 차단 후 배수 필요', deadline: '2025-04-26', done: false },
+        { id: 60, name: '주차 공간 확보 (이사 당일)', note: '이사 당일 양쪽 건물 주차 사전 협의', deadline: '2025-04-26', done: false },
+        { id: 35, name: '귀중품/서류 본인 직접 이동 분리', note: '이사 업체에 맡기지 않을 짐 별도 준비', deadline: '2025-04-27', done: false },
+        { id: 37, name: '세탁기 배수 호스 분리 및 고정', note: '', deadline: '2025-04-27', done: false },
+        { id: 32, name: '이사 실행', note: '', deadline: '2025-04-27', done: false },
+        { id: 31, name: '짐보관 예약', note: '너무 부서지지 않게 주의. 7/1 반출 → 2주전(6/17)까지 업체 통보', deadline: '2025-06-17', done: false },
+        { id: 33, name: '짐보관 만료 이전 수령', note: '7/1 기준', deadline: '2025-07-01', done: false },
+      ]
+    },
+    {
+      id: 4, name: '전입/주소변경',
+      tasks: [
+        { id: 55, name: '우편물 주소 이전 신청', note: '우체국 방문 또는 인터넷 우체국', deadline: '2025-05-01', done: false },
+        { id: 50, name: '전입신고', note: '이사 후 14일 이내', deadline: '2025-05-11', done: false },
+        { id: 47, name: '직장 인사팀 주소 변경 통보', note: '', deadline: '2025-05-15', done: false },
+        { id: 51, name: '관련자 주소 변경 통보', note: '어리이멈, 이르잖, 신재낭', deadline: '2025-05-15', done: false },
+        { id: 43, name: '건강보험 지역가입자 전환 여부 확인', note: '직장 가입자는 해당 없음', deadline: '2025-05-31', done: false },
+        { id: 46, name: '은행 계좌 주소 변경', note: '주요 거래 은행 모두 처리', deadline: '2025-05-31', done: false },
+        { id: 48, name: '국세청 주소 변경 (홈택스)', note: 'www.hometax.go.kr', deadline: '2025-05-31', done: false },
+        { id: 44, name: '자동차 등록증 주소 변경', note: '전입신고 후 30일 이내', deadline: '2025-06-10', done: false },
+        { id: 45, name: '운전면허증 주소 변경', note: '경찰서 또는 면허시험장', deadline: '2025-06-10', done: false },
+        { id: 49, name: '어린이집/학교 전학 처리', note: '해당 시에만', deadline: '', done: false },
+      ]
+    },
+    {
+      id: 5, name: '생활 인프라',
+      tasks: [
+        { id: 52, name: '인터넷/TV 이전 설치 예약', note: '이사 1~2주 전 신청 필수', deadline: '2025-04-13', done: false },
+        { id: 53, name: '도시가스 명의 변경 또는 신규 개통', note: '이사 당일 전 처리', deadline: '2025-04-27', done: false },
+        { id: 56, name: '비상구/소화기 위치 확인', note: '', deadline: '2025-04-28', done: false },
+        { id: 54, name: '관리비 자동이체 신규 등록', note: '', deadline: '2025-05-01', done: false },
+        { id: 57, name: '주변 병원/약국/마트 위치 파악', note: '', deadline: '', done: false },
+      ]
+    },
+  ],
+  costs: [
+    { id: 1, name: '증여세 (연부연납)', cat: '세금', amount: 0, status: '예정', note: '금액 확인 필요' },
+    { id: 2, name: '취득세', cat: '세금', amount: 0, status: '예정', note: '4/27 카드납' },
+    { id: 3, name: '보증금 반환', cat: '자금', amount: 0, status: '예정', note: '금액 미정' },
+    { id: 4, name: '이사 비용', cat: '이사', amount: 0, status: '예정', note: '4/27' },
+    { id: 5, name: '짐보관 비용', cat: '이사', amount: 0, status: '예정', note: '4/27 ~ 7/1' },
+    { id: 6, name: '인테리어 공사비', cat: '인테리어', amount: 0, status: '예정', note: '견적 후 확정' },
+  ],
+  memo: '',
+  collapsedCats: {},
+  theme: 'dark',
+  nextTaskId: 100,
+  nextCostId: 100,
+};
+
+// Editing state
+let editingTaskId = null;
+let editingTaskCatIdx = null;
+let editingCostId = null;
+
+// ──────────────────────────────────────────
+// PERSISTENCE
+// ──────────────────────────────────────────
+function loadState() {
+  try {
+    var savedV5 = localStorage.getItem('moving-project-v5');
+    var savedV4 = localStorage.getItem('moving-project-v4');
+    var savedV3 = localStorage.getItem('moving-project-v3');
+
+    if (savedV5) {
+      // v5 — 최신 구조, 그대로 로드 + 새 기본 항목 병합
+      var parsed = JSON.parse(savedV5);
+      var merged = { ...state, ...parsed };
+      mergeNewDefaults(merged);
+      state = merged;
+      return;
+    }
+
+    var oldData = savedV4 ? JSON.parse(savedV4) : (savedV3 ? JSON.parse(savedV3) : null);
+    if (!oldData) return;
+
+    // v3/v4 → v5 마이그레이션: task를 새 카테고리 구조로 재배치
+    // task ID → 새 catIdx 매핑
+    var idToNewCat = {
+      1:0,2:0,3:0,4:0,5:0,6:0,40:0,41:0,42:0,         // 세금/법무
+      10:1,11:1,12:1,13:1,14:1,15:1,16:1,               // 자금/정산
+      20:2,21:2,22:2,23:2,24:2,25:2,26:2,               // 인테리어/점검
+      30:3,31:3,32:3,33:3,34:3,35:3,36:3,37:3,38:3,39:3,60:3, // 이사
+      43:4,44:4,45:4,46:4,47:4,48:4,49:4,50:4,51:4,55:4, // 전입/주소변경
+      52:5,53:5,54:5,56:5,57:5                            // 생활 인프라
+    };
+    // old catIdx → new catIdx 기본 매핑 (사용자 추가 항목용)
+    var catFallback = {0:0, 1:1, 2:2, 3:3, 4:4, 5:5};
+
+    // 1) 기존 데이터에서 모든 task 수집 (done 상태 보존)
+    var taskMap = {};
+    if (oldData.categories) {
+      oldData.categories.forEach(function(cat) {
+        cat.tasks.forEach(function(t) {
+          taskMap[t.id] = { ...t };
+        });
+      });
+    }
+
+    // 2) 기본 state 카테고리를 복사하고, 기존 done 상태 적용
+    var newCats = state.categories.map(function(cat) {
+      return {
+        id: cat.id,
+        name: cat.name,
+        tasks: cat.tasks.map(function(t) {
+          if (taskMap[t.id]) {
+            var old = taskMap[t.id];
+            delete taskMap[t.id];
+            return { id: t.id, name: old.name || t.name, note: old.note || t.note, deadline: old.deadline || t.deadline, done: old.done };
+          }
+          return { ...t };
+        })
+      };
+    });
+
+    // 3) 남은 사용자 추가 항목(id >= 100 등)을 적절한 새 카테고리에 배치
+    Object.keys(taskMap).forEach(function(idStr) {
+      var t = taskMap[idStr];
+      var tid = parseInt(idStr);
+      var newCatIdx = idToNewCat[tid];
+      if (newCatIdx === undefined) {
+        // old cat에서 fallback 추정
+        if (oldData.categories) {
+          for (var oi = 0; oi < oldData.categories.length; oi++) {
+            if (oldData.categories[oi].tasks.some(function(ot) { return ot.id === tid; })) {
+              newCatIdx = catFallback[oi] !== undefined ? catFallback[oi] : 3;
+              break;
+            }
+          }
+        }
+        if (newCatIdx === undefined) newCatIdx = 3;
+      }
+      if (newCats[newCatIdx]) newCats[newCatIdx].tasks.push(t);
+    });
+
+    state = {
+      ...state,
+      ...oldData,
+      categories: newCats,
+    };
+
+    // 이전 키 삭제
+    localStorage.removeItem('moving-project-v3');
+    localStorage.removeItem('moving-project-v4');
+    saveState();
+  } catch(e) {}
+}
+
+// 새 기본 항목이 추가된 경우 병합
+function mergeNewDefaults(merged) {
+  var defaultState = getDefaultState();
+  defaultState.categories.forEach(function(defaultCat) {
+    var target = merged.categories.find(function(c) { return c.id === defaultCat.id; });
+    if (!target) return;
+    var existingIds = new Set(target.tasks.map(function(t) { return t.id; }));
+    defaultCat.tasks.forEach(function(dt) {
+      if (!existingIds.has(dt.id)) target.tasks.push({ ...dt });
+    });
+  });
+}
+
+function getDefaultState() {
+  return {
+    categories: [
+      { id: 0, name: '세금/법무', tasks: [
+        {id:1},{id:2},{id:3},{id:40},{id:41},{id:5},{id:4},{id:42},{id:6}
+      ]},
+      { id: 1, name: '자금/정산', tasks: [
+        {id:16},{id:10},{id:11},{id:12},{id:13},{id:15},{id:14}
+      ]},
+      { id: 2, name: '인테리어/점검', tasks: [
+        {id:20},{id:21},{id:26},{id:22},{id:23},{id:24},{id:25}
+      ]},
+      { id: 3, name: '이사 준비/실행', tasks: [
+        {id:30},{id:34},{id:38},{id:39},{id:36},{id:60},{id:35},{id:37},{id:32},{id:31},{id:33}
+      ]},
+      { id: 4, name: '전입/주소변경', tasks: [
+        {id:55},{id:50},{id:47},{id:51},{id:43},{id:46},{id:48},{id:44},{id:45},{id:49}
+      ]},
+      { id: 5, name: '생활 인프라', tasks: [
+        {id:52},{id:53},{id:56},{id:54},{id:57}
+      ]},
+    ]
+  };
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('moving-project-v5', JSON.stringify(state));
+  } catch(e) {}
+}
+
+// ──────────────────────────────────────────
+// THEME
+// ──────────────────────────────────────────
+function applyTheme() {
+  document.body.classList.toggle('light-mode', state.theme === 'light');
+}
+
+function toggleTheme() {
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  applyTheme();
+  saveState();
+}
+
+// ──────────────────────────────────────────
+// EXPORT / IMPORT
+// ──────────────────────────────────────────
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'moving-project-backup-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.categories && data.costs) {
+        state = { ...state, ...data };
+        saveState();
+        renderAll();
+        alert('데이터를 성공적으로 가져왔습니다!');
+      } else {
+        alert('올바른 백업 파일이 아닙니다.');
+      }
+    } catch(err) {
+      alert('파일을 읽는 중 오류가 발생했습니다.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ──────────────────────────────────────────
+// TABS
+// ──────────────────────────────────────────
+function showTab(name, evt) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const tabNames = ['timeline','tasks','costs','memo'];
+  if (evt) evt.currentTarget.classList.add('active');
+  else document.querySelectorAll('.tab')[tabNames.indexOf(name)].classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+  if (name === 'timeline') renderGantt();
+  if (name === 'tasks') renderTasks();
+  if (name === 'costs') renderCosts();
+  if (name === 'memo') loadMemo();
+}
+
+// ──────────────────────────────────────────
+// HELPERS
+// ──────────────────────────────────────────
+function parseDate(str) {
+  if (!str) return null;
+  const [y,m,d] = str.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  const d = parseDate(dateStr);
+  const now = new Date(); now.setHours(0,0,0,0);
+  return Math.round((d - now) / 86400000);
+}
+
+function deadlineClass(days, done) {
+  if (done) return 'dl-done';
+  if (days === null) return '';
+  if (days < 0) return 'dl-overdue';
+  if (days <= 7) return 'dl-urgent';
+  return 'dl-normal';
+}
+
+function deadlineLabel(days, done) {
+  if (done) return '완료';
+  if (days === null) return '';
+  if (days < 0) return 'D+' + Math.abs(days);
+  if (days === 0) return 'D-DAY';
+  return 'D-' + days;
+}
+
+function formatWon(n) {
+  if (!n) return '미정';
+  if (n >= 10000) return (n/10000).toFixed(1) + '억';
+  return n.toLocaleString() + '만';
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ──────────────────────────────────────────
+// D-DAY WIDGET
+// ──────────────────────────────────────────
+function updateDday() {
+  const days = daysUntil(MOVING_DATE);
+  const el = document.getElementById('dday-number');
+  if (days === null) return;
+  if (days < 0) {
+    el.textContent = 'D+' + Math.abs(days);
+    el.style.color = 'var(--danger)';
+  } else if (days === 0) {
+    el.textContent = 'D-DAY';
+    el.style.color = 'var(--accent2)';
+    el.classList.add('urgent-pulse');
+  } else {
+    el.textContent = 'D-' + days;
+    el.style.color = days <= 7 ? 'var(--danger)' : 'var(--accent2)';
+  }
+}
+
+// ──────────────────────────────────────────
+// ALERT BANNER
+// ──────────────────────────────────────────
+function updateAlertBanner() {
+  const items = [];
+  state.categories.forEach((cat, catIdx) => {
+    cat.tasks.forEach(t => {
+      if (t.done) return;
+      const d = daysUntil(t.deadline);
+      if (d === null) return;
+      if (d < 0) items.push({ task: t, catIdx, type: 'overdue', days: d, label: 'D+' + Math.abs(d) });
+      else if (d === 0) items.push({ task: t, catIdx, type: 'today', days: d, label: 'D-DAY' });
+      else if (d === 1) items.push({ task: t, catIdx, type: 'tomorrow', days: d, label: '내일' });
+    });
+  });
+
+  const banner = document.getElementById('alert-banner');
+  const container = document.getElementById('alert-items');
+
+  if (items.length === 0) {
+    banner.classList.remove('show');
+    return;
+  }
+
+  banner.classList.add('show');
+  items.sort((a, b) => a.days - b.days);
+
+  container.innerHTML = items.map(item =>
+    '<div class="alert-item ' + item.type + '" onclick="jumpToTask(' + item.catIdx + ',' + item.task.id + ')">' +
+      '<span class="alert-tag ' + item.type + '">' + item.label + '</span>' +
+      '<span>' + escapeHtml(item.task.name) + '</span>' +
+    '</div>'
+  ).join('');
+}
+
+// ──────────────────────────────────────────
+// HEADER STATS
+// ──────────────────────────────────────────
+function updateStats() {
+  let total = 0, done = 0, urgent = 0;
+  state.categories.forEach(cat => {
+    cat.tasks.forEach(t => {
+      total++;
+      if (t.done) done++;
+      else {
+        const d = daysUntil(t.deadline);
+        if (d !== null && d <= 7) urgent++;
+      }
+    });
+  });
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('stat-completion').textContent = pct + '%';
+  document.getElementById('stat-urgent').textContent = urgent;
+  if (urgent > 0) document.getElementById('stat-urgent').classList.add('urgent-pulse');
+  else document.getElementById('stat-urgent').classList.remove('urgent-pulse');
+
+  const totalCost = state.costs.reduce((s, c) => s + (c.amount||0), 0);
+  document.getElementById('stat-cost').textContent = totalCost ? formatWon(totalCost) : '미정';
+}
+
+// ──────────────────────────────────────────
+// GANTT
+// ──────────────────────────────────────────
+function monthToIndex(m) { return m - MONTH_START; }
+
+function getMonthFraction(dateStr) {
+  if (!dateStr) return null;
+  const d = parseDate(dateStr);
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  const daysInMonth = new Date(d.getFullYear(), m, 0).getDate();
+  return monthToIndex(m) + (day / daysInMonth);
+}
+
+// Dynamic current month in gantt header
+function renderGanttMonths() {
+  const container = document.getElementById('gantt-months');
+  container.innerHTML = '';
+  MONTHS.forEach((label, i) => {
+    const monthNum = MONTH_START + i;
+    const isCurrent = (todayMonth === monthNum && today.getFullYear() === 2025);
+    const div = document.createElement('div');
+    div.className = 'gantt-month' + (isCurrent ? ' current' : '');
+    div.textContent = label;
+    container.appendChild(div);
+  });
+}
+
+const GANTT_TASKS = [
+  { label: '세금/법무 (증여)', start: '2025-03-25', end: '2025-04-10', color: '#e8c547', catIdx: 0 },
+  { label: '세금/법무 (신고·납부)', start: '2025-04-10', end: '2025-07-31', color: '#e8c54780', catIdx: 0 },
+  { label: '자금/정산', start: '2025-04-01', end: '2025-04-27', color: '#5b8dee', catIdx: 1 },
+  { label: '인테리어/점검', start: '2025-04-01', end: '2025-04-27', color: '#4cbb8a', catIdx: 2 },
+  { label: '이사 준비/실행', start: '2025-04-01', end: '2025-04-27', color: '#f07b3f', catIdx: 3 },
+  { label: '짐보관', start: '2025-04-27', end: '2025-07-01', color: '#f07b3f80', catIdx: 3 },
+  { label: '전입/주소변경', start: '2025-04-27', end: '2025-06-10', color: '#e85555', catIdx: 4 },
+  { label: '생활 인프라', start: '2025-04-13', end: '2025-05-15', color: '#b464ff', catIdx: 5 },
+];
+
+const GANTT_MILESTONES = [
+  { label: '이사', date: '2025-04-27', color: '#f07b3f' },
+  { label: '잔금완결', date: '2025-09-01', color: '#e85555' },
+  { label: '증여세신고', date: '2025-06-30', color: '#e8c547' },
+  { label: '짐보관 만료', date: '2025-07-01', color: '#b464ff' },
+];
+
+function renderGantt() {
+  renderGanttMonths();
+  const body = document.getElementById('gantt-body');
+  body.innerHTML = '';
+
+  const todayFrac = getMonthFraction(today.toISOString().split('T')[0]);
+  const todayPct = todayFrac !== null && todayFrac >= 0 && todayFrac <= 5
+    ? (todayFrac / 5 * 100) : null;
+
+  // Determine which month index is current
+  const currentMonthIdx = (todayMonth >= MONTH_START && todayMonth < MONTH_START + 5 && today.getFullYear() === 2025)
+    ? todayMonth - MONTH_START : -1;
+
+  function makeTodayLine() {
+    if (todayPct === null) return null;
+    const line = document.createElement('div');
+    line.className = 'deadline-line';
+    line.style.left = todayPct + '%';
+    return line;
+  }
+
+  function makeColBg(barArea) {
+    for (let i = 0; i < 5; i++) {
+      const col = document.createElement('div');
+      col.className = 'gantt-col-bg' + (i === currentMonthIdx ? ' current-month' : '');
+      barArea.appendChild(col);
+    }
+  }
+
+  GANTT_TASKS.forEach((task, idx) => {
+    const row = document.createElement('div');
+    row.className = 'gantt-row';
+    const cat = state.categories[task.catIdx];
+    const allDone = cat && cat.tasks.every(t => t.done);
+    if (allDone) row.classList.add('done');
+
+    const label = document.createElement('div');
+    label.className = 'gantt-task-label';
+    label.innerHTML = '<span class="gantt-task-name' + (allDone ? ' done' : '') + '">' + task.label + '</span>';
+
+    const barArea = document.createElement('div');
+    barArea.className = 'gantt-bar-area';
+    barArea.style.position = 'relative';
+    makeColBg(barArea);
+    const tl = makeTodayLine(); if (tl) barArea.appendChild(tl);
+
+    const startFrac = getMonthFraction(task.start);
+    const endFrac = getMonthFraction(task.end);
+    if (startFrac !== null && endFrac !== null) {
+      const left = Math.max(0, startFrac / 5 * 100);
+      const right = Math.min(100, endFrac / 5 * 100);
+      const width = right - left;
+      if (width > 0) {
+        const bar = document.createElement('div');
+        bar.className = 'gantt-bar';
+        bar.style.left = left + '%';
+        bar.style.width = width + '%';
+        bar.style.background = task.color;
+        bar.style.color = '#000';
+        bar.style.fontSize = '9px';
+        bar.title = task.label + ': ' + task.start + ' ~ ' + task.end;
+        if (width > 8) bar.textContent = task.label;
+        barArea.appendChild(bar);
+      }
+    }
+
+    if (idx === GANTT_TASKS.length - 1) {
+      GANTT_MILESTONES.forEach(ms => {
+        const frac = getMonthFraction(ms.date);
+        if (frac === null || frac < 0 || frac > 5) return;
+        const pct = frac / 5 * 100;
+        const diamond = document.createElement('div');
+        diamond.className = 'gantt-milestone';
+        diamond.style.left = 'calc(' + pct + '% - 6px)';
+        diamond.style.background = ms.color;
+        diamond.title = ms.label;
+        barArea.appendChild(diamond);
+      });
+    }
+
+    row.appendChild(label);
+    row.appendChild(barArea);
+    body.appendChild(row);
+  });
+
+  // Separator
+  const sep = document.createElement('div');
+  sep.style.cssText = 'height:1px; background: linear-gradient(90deg, transparent, var(--accent), transparent); opacity:0.25; margin:2px 0;';
+  body.appendChild(sep);
+
+  // Individual deadline pins
+  const taskRow = document.createElement('div');
+  taskRow.className = 'gantt-row';
+  taskRow.style.minHeight = '52px';
+
+  const taskLabel = document.createElement('div');
+  taskLabel.className = 'gantt-task-label';
+  taskLabel.innerHTML = '<span class="gantt-task-name" style="color:var(--text3);font-size:11px;">개별 마감일</span>';
+
+  const taskBarArea = document.createElement('div');
+  taskBarArea.className = 'gantt-bar-area';
+  taskBarArea.style.position = 'relative';
+  taskBarArea.style.minHeight = '52px';
+  makeColBg(taskBarArea);
+  const tl2 = makeTodayLine(); if (tl2) taskBarArea.appendChild(tl2);
+
+  state.categories.forEach((cat, catIdx) => {
+    const color = CAT_COLORS[catIdx];
+    cat.tasks.forEach(t => {
+      if (!t.deadline) return;
+      const frac = getMonthFraction(t.deadline);
+      if (frac === null || frac < 0 || frac > 5) return;
+      const pct = frac / 5 * 100;
+
+      const pin = document.createElement('div');
+      pin.style.cssText =
+        'position:absolute;left:calc(' + pct + '% - 5px);top:50%;transform:translateY(-50%);' +
+        'width:10px;height:10px;border-radius:50%;border:2px solid ' + color.text + ';' +
+        'background:' + (t.done ? color.text : 'var(--bg)') + ';cursor:pointer;' +
+        'transition:transform 0.15s,background 0.2s;z-index:10;';
+      pin.title = '[' + cat.name + '] ' + t.name + '\n마감: ' + t.deadline;
+
+      const pinLabel = document.createElement('div');
+      pinLabel.style.cssText =
+        'position:absolute;bottom:14px;left:50%;transform:translateX(-50%);' +
+        'background:var(--surface3);border:1px solid ' + color.text + '44;color:' + color.text + ';' +
+        'font-size:9px;font-family:var(--mono);padding:2px 5px;border-radius:3px;' +
+        'white-space:nowrap;opacity:0;pointer-events:none;transition:opacity 0.15s;z-index:20;';
+      const days = daysUntil(t.deadline);
+      const dlTxt = t.done ? '\u2713' : (days < 0 ? 'D+' + Math.abs(days) : days === 0 ? 'D-DAY' : 'D-' + days);
+      pinLabel.textContent = (t.name.length > 8 ? t.name.slice(0,8) + '\u2026' : t.name) + ' ' + dlTxt;
+      pin.appendChild(pinLabel);
+
+      pin.addEventListener('mouseenter', function() {
+        pin.style.transform = 'translateY(-50%) scale(1.5)';
+        pinLabel.style.opacity = '1';
+      });
+      pin.addEventListener('mouseleave', function() {
+        pin.style.transform = 'translateY(-50%)';
+        pinLabel.style.opacity = '0';
+      });
+      pin.addEventListener('click', function() { jumpToTask(catIdx, t.id); });
+
+      if (t.done) pin.style.opacity = '0.35';
+      else if (days !== null && days <= 7) pin.style.boxShadow = '0 0 6px ' + color.text;
+
+      taskBarArea.appendChild(pin);
+    });
+  });
+
+  taskRow.appendChild(taskLabel);
+  taskRow.appendChild(taskBarArea);
+  body.appendChild(taskRow);
+}
+
+function jumpToTask(catIdx, taskId) {
+  showTab('tasks');
+  // Expand category if collapsed
+  state.collapsedCats[catIdx] = false;
+  saveState();
+  renderTasks();
+  setTimeout(function() {
+    const el = document.getElementById('task-' + taskId);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.style.transition = 'background 0.3s';
+    el.style.background = 'rgba(232,197,71,0.12)';
+    el.style.borderLeft = '3px solid var(--accent)';
+    setTimeout(function() {
+      el.style.background = '';
+      el.style.borderLeft = '';
+    }, 2000);
+  }, 150);
+}
+
+// ──────────────────────────────────────────
+// TASKS
+// ──────────────────────────────────────────
+function renderTasks() {
+  const container = document.getElementById('task-categories');
+  container.innerHTML = '';
+
+  state.categories.forEach(function(cat, catIdx) {
+    const color = CAT_COLORS[catIdx];
+    // Sort: incomplete first, then by deadline
+    const sorted = [...cat.tasks].sort(function(a, b) {
+      if (a.done !== b.done) return a.done ? 1 : -1;
+      if (!a.deadline && !b.deadline) return 0;
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return a.deadline.localeCompare(b.deadline);
+    });
+
+    const doneCnt = cat.tasks.filter(function(t) { return t.done; }).length;
+    const pct = cat.tasks.length ? doneCnt / cat.tasks.length * 100 : 0;
+    const isCollapsed = !!state.collapsedCats[catIdx];
+
+    let urgentCnt = 0;
+    cat.tasks.forEach(function(t) {
+      if (!t.done) {
+        const d = daysUntil(t.deadline);
+        if (d !== null && d <= 7) urgentCnt++;
+      }
+    });
+    let badgeClass = 'badge-normal', badgeText = '';
+    if (urgentCnt > 0) { badgeClass = 'badge-urgent'; badgeText = '\uae34\uae09 ' + urgentCnt + '\uac74'; }
+    else if (cat.tasks.some(function(t) { return !t.done && daysUntil(t.deadline) <= 30; })) {
+      badgeClass = 'badge-soon'; badgeText = '\uc784\ubc15';
+    }
+
+    const block = document.createElement('div');
+    block.className = 'category-block';
+
+    block.innerHTML =
+      '<div class="category-header" onclick="toggleCategory(' + catIdx + ')">' +
+        '<div class="category-title-wrap">' +
+          '<div class="category-num" style="background:' + color.numBg + ';color:' + color.num + '">' + (catIdx+1) + '</div>' +
+          '<div class="category-name" style="color:' + color.text + '">' + escapeHtml(cat.name) + '</div>' +
+        '</div>' +
+        '<div class="category-meta">' +
+          '<span class="category-progress-text">' + doneCnt + '/' + cat.tasks.length + '</span>' +
+          (badgeText ? '<span class="category-badge ' + badgeClass + '">' + badgeText + '</span>' : '') +
+          '<span class="collapse-arrow' + (isCollapsed ? ' collapsed' : '') + '">\u25BC</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="category-progress-bar">' +
+        '<div class="category-progress-fill" style="width:' + pct + '%;background:' + color.text + '"></div>' +
+      '</div>' +
+      '<div class="task-list' + (isCollapsed ? ' collapsed' : '') + '" id="tasklist-' + catIdx + '">' +
+        sorted.map(function(t) { return renderTaskItem(t, catIdx); }).join('') +
+        '<button class="add-btn" onclick="openAddTaskModalForCat(' + catIdx + ')">+ 항목 추가</button>' +
+      '</div>';
+
+    container.appendChild(block);
+  });
+}
+
+function renderTaskItem(t, catIdx) {
+  const days = daysUntil(t.deadline);
+  const dlClass = deadlineClass(days, t.done);
+  const dlLabel = deadlineLabel(days, t.done);
+
+  return '<div class="task-item ' + (t.done ? 'completed' : '') + '" id="task-' + t.id + '">' +
+    '<div class="checkbox ' + (t.done ? 'checked' : '') + '" onclick="toggleTask(' + catIdx + ',' + t.id + ',event)"></div>' +
+    '<div class="task-content">' +
+      '<div class="task-name ' + (t.done ? 'done' : '') + '">' + escapeHtml(t.name) + '</div>' +
+      (t.note ? '<div class="task-note">' + escapeHtml(t.note) + '</div>' : '') +
+      (t.deadline ? '<div class="task-note">' + t.deadline + '</div>' : '') +
+    '</div>' +
+    '<div class="task-right">' +
+      (dlLabel ? '<div class="task-deadline ' + dlClass + ((!t.done && days !== null && days <= 3) ? ' urgent-pulse' : '') + '">' + dlLabel + '</div>' : '') +
+      '<div class="task-actions">' +
+        '<button class="task-act-btn" onclick="editTask(' + catIdx + ',' + t.id + ',event)" title="편집">\u270E</button>' +
+        '<button class="task-act-btn delete" onclick="confirmDeleteTask(' + catIdx + ',' + t.id + ',event)" title="삭제">\u2715</button>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+function toggleTask(catIdx, taskId, e) {
+  e.stopPropagation();
+  const cat = state.categories[catIdx];
+  const task = cat.tasks.find(function(t) { return t.id === taskId; });
+  if (task) {
+    task.done = !task.done;
+    saveState();
+    renderTasks();
+    updateStats();
+    updateAlertBanner();
+    if (document.getElementById('panel-timeline').classList.contains('active')) renderGantt();
+  }
+}
+
+function toggleCategory(catIdx) {
+  state.collapsedCats[catIdx] = !state.collapsedCats[catIdx];
+  saveState();
+  const list = document.getElementById('tasklist-' + catIdx);
+  const arrow = list.parentElement.querySelector('.collapse-arrow');
+  if (state.collapsedCats[catIdx]) {
+    list.classList.add('collapsed');
+    if (arrow) arrow.classList.add('collapsed');
+  } else {
+    list.classList.remove('collapsed');
+    if (arrow) arrow.classList.remove('collapsed');
+  }
+}
+
+// ──────────────────────────────────────────
+// TASK EDIT / DELETE
+// ──────────────────────────────────────────
+function populateTaskCatSelect() {
+  const sel = document.getElementById('new-task-cat');
+  sel.innerHTML = '';
+  state.categories.forEach(function(cat, i) {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = (i+1) + '. ' + cat.name;
+    sel.appendChild(opt);
+  });
+}
+
+function editTask(catIdx, taskId, e) {
+  if (e) e.stopPropagation();
+  const cat = state.categories[catIdx];
+  const task = cat.tasks.find(function(t) { return t.id === taskId; });
+  if (!task) return;
+
+  editingTaskId = taskId;
+  editingTaskCatIdx = catIdx;
+  populateTaskCatSelect();
+
+  document.getElementById('modal-task-title').textContent = '항목 편집';
+  document.getElementById('modal-task-submit').textContent = '저장';
+  document.getElementById('modal-task-delete').style.display = 'inline-block';
+  document.getElementById('new-task-cat').value = catIdx;
+  document.getElementById('new-task-name').value = task.name;
+  document.getElementById('new-task-date').value = task.deadline || '';
+  document.getElementById('new-task-note').value = task.note || '';
+  document.getElementById('modal-task').classList.add('open');
+}
+
+function confirmDeleteTask(catIdx, taskId, e) {
+  if (e) e.stopPropagation();
+  const cat = state.categories[catIdx];
+  const task = cat.tasks.find(function(t) { return t.id === taskId; });
+  if (!task) return;
+
+  document.getElementById('confirm-title').textContent = '항목 삭제';
+  document.getElementById('confirm-msg').textContent = '"' + task.name + '" 을(를) 삭제하시겠습니까?';
+  document.getElementById('confirm-ok').onclick = function() {
+    cat.tasks = cat.tasks.filter(function(t) { return t.id !== taskId; });
+    saveState();
+    closeModal('modal-confirm');
+    renderTasks();
+    updateStats();
+    updateAlertBanner();
+  };
+  document.getElementById('modal-confirm').classList.add('open');
+}
+
+function deleteEditingTask() {
+  if (editingTaskId === null) return;
+  const cat = state.categories[editingTaskCatIdx];
+  cat.tasks = cat.tasks.filter(function(t) { return t.id !== editingTaskId; });
+  editingTaskId = null;
+  editingTaskCatIdx = null;
+  saveState();
+  closeModal('modal-task');
+  renderTasks();
+  updateStats();
+  updateAlertBanner();
+}
+
+function openAddTaskModal() {
+  editingTaskId = null;
+  editingTaskCatIdx = null;
+  populateTaskCatSelect();
+  document.getElementById('modal-task-title').textContent = '항목 추가';
+  document.getElementById('modal-task-submit').textContent = '추가';
+  document.getElementById('modal-task-delete').style.display = 'none';
+  resetTaskForm();
+  document.getElementById('modal-task').classList.add('open');
+}
+
+function openAddTaskModalForCat(catIdx) {
+  editingTaskId = null;
+  editingTaskCatIdx = null;
+  populateTaskCatSelect();
+  document.getElementById('modal-task-title').textContent = '항목 추가';
+  document.getElementById('modal-task-submit').textContent = '추가';
+  document.getElementById('modal-task-delete').style.display = 'none';
+  resetTaskForm();
+  document.getElementById('new-task-cat').value = catIdx;
+  document.getElementById('modal-task').classList.add('open');
+}
+
+function resetTaskForm() {
+  document.getElementById('new-task-name').value = '';
+  document.getElementById('new-task-date').value = '';
+  document.getElementById('new-task-note').value = '';
+}
+
+function saveTask() {
+  const catIdx = parseInt(document.getElementById('new-task-cat').value);
+  const name = document.getElementById('new-task-name').value.trim();
+  const date = document.getElementById('new-task-date').value;
+  const note = document.getElementById('new-task-note').value.trim();
+  if (!name) return;
+
+  if (editingTaskId !== null) {
+    // Editing
+    const oldCat = state.categories[editingTaskCatIdx];
+    const taskIdx = oldCat.tasks.findIndex(function(t) { return t.id === editingTaskId; });
+    if (taskIdx === -1) return;
+    const task = oldCat.tasks[taskIdx];
+
+    if (editingTaskCatIdx !== catIdx) {
+      // Move to different category
+      oldCat.tasks.splice(taskIdx, 1);
+      task.name = name;
+      task.deadline = date;
+      task.note = note;
+      state.categories[catIdx].tasks.push(task);
+    } else {
+      task.name = name;
+      task.deadline = date;
+      task.note = note;
+    }
+    editingTaskId = null;
+    editingTaskCatIdx = null;
+  } else {
+    // Adding
+    state.categories[catIdx].tasks.push({
+      id: state.nextTaskId++,
+      name: name,
+      deadline: date,
+      note: note,
+      done: false
+    });
+  }
+
+  saveState();
+  closeModal('modal-task');
+  resetTaskForm();
+  renderTasks();
+  updateStats();
+  updateAlertBanner();
+  if (document.getElementById('panel-timeline').classList.contains('active')) renderGantt();
+}
+
+// ──────────────────────────────────────────
+// COSTS
+// ──────────────────────────────────────────
+const CAT_TAG_COLORS = {
+  '\uc138\uae08': 'background:rgba(232,85,85,0.15); color:#e85555',
+  '\uc774\uc0ac': 'background:rgba(240,123,63,0.15); color:#f07b3f',
+  '\uc778\ud14c\ub9ac\uc5b4': 'background:rgba(76,187,138,0.15); color:#4cbb8a',
+  '\uc790\uae08': 'background:rgba(91,141,238,0.15); color:#5b8dee',
+  '\uae30\ud0c0': 'background:rgba(180,100,255,0.15); color:#b464ff',
+};
+
+function renderCosts() {
+  const list = document.getElementById('cost-list');
+  list.innerHTML = '';
+
+  let totalAmt = 0, confirmedAmt = 0, pendingAmt = 0;
+
+  state.costs.forEach(function(c) {
+    totalAmt += (c.amount || 0);
+    if (c.status === '완료') confirmedAmt += (c.amount || 0);
+    else pendingAmt += (c.amount || 0);
+
+    const tagStyle = CAT_TAG_COLORS[c.cat] || '';
+    const row = document.createElement('div');
+    row.className = 'cost-row';
+    row.innerHTML =
+      '<div>' +
+        '<div class="cost-name">' + escapeHtml(c.name) + '</div>' +
+        (c.note ? '<div style="font-size:11px;color:var(--text3);margin-top:2px">' + escapeHtml(c.note) + '</div>' : '') +
+      '</div>' +
+      '<div><span class="cost-category-tag" style="' + tagStyle + '">' + c.cat + '</span></div>' +
+      '<div class="cost-amount ' + (c.amount ? 'expense' : '') + '">' + (c.amount ? formatWon(c.amount) : '미정') + '</div>' +
+      '<div class="cost-status">' + c.status + '</div>' +
+      '<div class="cost-actions">' +
+        '<button class="task-act-btn" onclick="editCost(' + c.id + ')" title="편집">\u270E</button>' +
+        '<button class="task-act-btn delete" onclick="confirmDeleteCost(' + c.id + ')" title="삭제">\u2715</button>' +
+      '</div>';
+    list.appendChild(row);
+  });
+
+  document.getElementById('total-cost').textContent = totalAmt ? formatWon(totalAmt) : '미정';
+  document.getElementById('confirmed-cost').textContent = confirmedAmt ? formatWon(confirmedAmt) : '\u2014';
+  document.getElementById('pending-cost').textContent = pendingAmt ? formatWon(pendingAmt) : '\u2014';
+}
+
+function openAddCostModal() {
+  editingCostId = null;
+  document.getElementById('modal-cost-title').textContent = '비용 추가';
+  document.getElementById('modal-cost-submit').textContent = '추가';
+  document.getElementById('modal-cost-delete').style.display = 'none';
+  resetCostForm();
+  document.getElementById('modal-cost').classList.add('open');
+}
+
+function resetCostForm() {
+  document.getElementById('new-cost-name').value = '';
+  document.getElementById('new-cost-amount').value = '';
+  document.getElementById('new-cost-note').value = '';
+  document.getElementById('new-cost-cat').value = '세금';
+  document.getElementById('new-cost-status').value = '예정';
+}
+
+function editCost(costId) {
+  const cost = state.costs.find(function(c) { return c.id === costId; });
+  if (!cost) return;
+  editingCostId = costId;
+
+  document.getElementById('modal-cost-title').textContent = '비용 편집';
+  document.getElementById('modal-cost-submit').textContent = '저장';
+  document.getElementById('modal-cost-delete').style.display = 'inline-block';
+  document.getElementById('new-cost-name').value = cost.name;
+  document.getElementById('new-cost-cat').value = cost.cat;
+  document.getElementById('new-cost-amount').value = cost.amount || '';
+  document.getElementById('new-cost-note').value = cost.note || '';
+  document.getElementById('new-cost-status').value = cost.status;
+  document.getElementById('modal-cost').classList.add('open');
+}
+
+function confirmDeleteCost(costId) {
+  const cost = state.costs.find(function(c) { return c.id === costId; });
+  if (!cost) return;
+
+  document.getElementById('confirm-title').textContent = '비용 삭제';
+  document.getElementById('confirm-msg').textContent = '"' + cost.name + '" 을(를) 삭제하시겠습니까?';
+  document.getElementById('confirm-ok').onclick = function() {
+    state.costs = state.costs.filter(function(c) { return c.id !== costId; });
+    saveState();
+    closeModal('modal-confirm');
+    renderCosts();
+    updateStats();
+  };
+  document.getElementById('modal-confirm').classList.add('open');
+}
+
+function deleteEditingCost() {
+  if (editingCostId === null) return;
+  state.costs = state.costs.filter(function(c) { return c.id !== editingCostId; });
+  editingCostId = null;
+  saveState();
+  closeModal('modal-cost');
+  renderCosts();
+  updateStats();
+}
+
+function saveCost() {
+  const name = document.getElementById('new-cost-name').value.trim();
+  const cat = document.getElementById('new-cost-cat').value;
+  const amount = parseInt(document.getElementById('new-cost-amount').value) || 0;
+  const note = document.getElementById('new-cost-note').value.trim();
+  const status = document.getElementById('new-cost-status').value;
+  if (!name) return;
+
+  if (editingCostId !== null) {
+    const cost = state.costs.find(function(c) { return c.id === editingCostId; });
+    if (cost) {
+      cost.name = name;
+      cost.cat = cat;
+      cost.amount = amount;
+      cost.note = note;
+      cost.status = status;
+    }
+    editingCostId = null;
+  } else {
+    state.costs.push({ id: state.nextCostId++, name: name, cat: cat, amount: amount, status: status, note: note });
+  }
+
+  saveState();
+  closeModal('modal-cost');
+  resetCostForm();
+  renderCosts();
+  updateStats();
+}
+
+// ──────────────────────────────────────────
+// MEMO
+// ──────────────────────────────────────────
+let memoTimer = null;
+
+function loadMemo() {
+  document.getElementById('memo-text').value = state.memo || '';
+}
+
+document.getElementById('memo-text').addEventListener('input', function() {
+  clearTimeout(memoTimer);
+  memoTimer = setTimeout(function() {
+    state.memo = document.getElementById('memo-text').value;
+    saveState();
+    const saved = document.getElementById('memo-saved');
+    saved.classList.add('show');
+    setTimeout(function() { saved.classList.remove('show'); }, 1500);
+  }, 500);
+});
+
+// ──────────────────────────────────────────
+// MODALS
+// ──────────────────────────────────────────
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// ──────────────────────────────────────────
+// RENDER ALL
+// ──────────────────────────────────────────
+function renderAll() {
+  applyTheme();
+  updateDday();
+  updateAlertBanner();
+  updateStats();
+  renderGantt();
+  renderTasks();
+  renderCosts();
+  loadMemo();
+}
+
+// ──────────────────────────────────────────
+// INIT
+// ──────────────────────────────────────────
+loadState();
+populateTaskCatSelect();
+renderAll();
+
+// 헤더 높이에 맞춰 탭 sticky 위치 동적 설정
+function syncTabsTop() {
+  var header = document.querySelector('.header');
+  var tabs = document.querySelector('.tabs');
+  if (header && tabs) {
+    tabs.style.top = header.offsetHeight + 'px';
+  }
+}
+syncTabsTop();
+window.addEventListener('resize', syncTabsTop);
+</script>
+</body>
+</html>
